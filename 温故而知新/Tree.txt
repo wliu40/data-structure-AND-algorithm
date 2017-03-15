@@ -1,0 +1,85 @@
+class TreeNode:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+    def __str__(self):
+        return str(self.val)
+class Tree:
+    def __init__(self):
+        self.root = None
+    
+    def construct(self, arr):
+        if not len(arr):
+            return
+        self.root = TreeNode(arr[0])
+        queue = [self.root]
+        idx = 1
+        while idx < len(arr):
+            tmp = queue.pop(0)           
+            if tmp:
+                tmp.left = None if arr[idx] == '#' else TreeNode(arr[idx])
+                queue.append(tmp.left)               
+                idx += 1
+            if idx < len(arr):
+                tmp.right = None if arr[idx] == '#' else TreeNode(arr[idx])
+                queue.append(tmp.right)  
+                idx += 1
+    def levelOrderTrav(self):
+        res = []
+        if not self.root:
+            return res
+        tmp = self.root
+        queue = []
+        queue.append(tmp)
+        size = 1
+        while len(queue):
+            arr = []
+            last_level_size = size
+            print size
+            cnt, size = 0, 0
+            while cnt < last_level_size:
+                treeNode = queue.pop(0)
+                arr.append(treeNode.val)
+                cnt += 1
+                if treeNode.left:
+                    queue.append(treeNode.left)
+                    size += 1
+                if treeNode.right:
+                    queue.append(treeNode.right)
+                    size += 1
+            res.append(arr)
+        return res
+    def levelOrder2(self):
+        res = []
+        self.helper(self.root, 0, res)
+        return res
+    def helper(self, _root, level, res):        
+        if not _root:
+            return
+        if len(res) <= level:
+            res.append([])
+        res[level].append(_root.val)
+        self.helper(_root.left, level+1, res)
+        self.helper(_root.right, level+1, res)
+        
+    def levelOrderBottom(self):        
+        stack = [(self.root, 0)]
+        res = []
+        while stack:
+            node, level = stack.pop()
+            if node:
+                if len(res) < level+1:
+                    res.insert(0, [])
+                res[-(level+1)].append(node.val)
+                stack.append((node.right, level+1))
+                stack.append((node.left, level+1))
+        return res
+ 
+t = Tree()
+t.construct([1,2,6,5,'#','#',3,1,4])
+print t.levelOrderTrav()
+print t.levelOrder2()
+print t.levelOrderBottom()
+
+             
