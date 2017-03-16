@@ -50,19 +50,65 @@ class Tree:
                     size += 1
             res.append(arr)
         return res
+    '''    '''
+    def levelOrderTrav2(self):
+        if self.root:            
+            queue = [self.root]        
+            while queue:
+                tmp = queue.pop(0)
+                print str(tmp.val) + " ",
+                if tmp.left:
+                    queue.append(tmp.left)
+                if tmp.right:
+                    queue.append(tmp.right)
+                    
+    def levelOrderTrav3(self):        
+        stack = [ (self.root, 0) ]
+        res = []
+        while stack:
+            node, level = stack.pop()            
+            if node:
+                if len(res) <= level:
+                    res.append([])
+                res[level].insert(0, node.val)
+                stack.append((node.left, level+1))
+                stack.append((node.right, level+1))
+        return res
+    
+    def levelOrderTrav4(self):
+        queue = [ (self.root, 0) ]
+        res = []
+        while queue:
+            node, level = queue.pop(0)            
+            if node:
+                if len(res) <= level:
+                    res.append([])
+                res[level].append(node.val)
+                queue.append((node.left, level+1))
+                queue.append((node.right, level+1))
+        return res
+
+    '''
+    level order visit recursive
+    '''
     def levelOrder2(self):
         res = []
         self.helper(self.root, 0, res)
         return res
     def helper(self, _root, level, res):        
-        if not _root:
+        if not _root: 
             return
         if len(res) <= level:
+            #res.insert(0, [])
             res.append([])
+        #res[-level-1].append(_root.val)
         res[level].append(_root.val)
         self.helper(_root.left, level+1, res)
         self.helper(_root.right, level+1, res)
         
+    ''' 
+    level order visit with stack 
+    '''   
     def levelOrderBottom(self):        
         stack = [(self.root, 0)]
         res = []
@@ -75,11 +121,49 @@ class Tree:
                 stack.append((node.right, level+1))
                 stack.append((node.left, level+1))
         return res
- 
+    '''
+    get height of the tree recursively
+    '''
+    def getHeight(self):
+        return self.height(self.root)
+    def height(self, _root):
+        if not _root:
+            return 0
+        left = self.height(_root.left)
+        right = self.height(_root.right)
+        return max(left, right) + 1
+        
+    '''
+    print all levels give the level number
+    '''
+    def printAllLevel(self):        
+        for i in range(self.getHeight()+1):    
+            self.printGivenLevel(self.root, i)
+            print 
+    def printGivenLevel(self, _root, level):
+        if _root is None:
+            return
+        if level == 1:
+            print str(_root.val) + " "
+        elif level > 1 :
+            self.printGivenLevel(_root.left , level-1)
+            self.printGivenLevel(_root.right , level-1)
+            
+            
 t = Tree()
-t.construct([1,2,6,5,'#','#',3,1,4])
+t.construct([1,2,3,4,5])
+print "t.levelOrderTrav:"
 print t.levelOrderTrav()
+print "t.levelOrderTrav2:"
+print t.levelOrderTrav2()
+print "t.levelOrderTrav3:"
+print t.levelOrderTrav3()
+print "t.levelOrderTrav4:"
+print t.levelOrderTrav4()
+
 print t.levelOrder2()
 print t.levelOrderBottom()
+print "height: ", t.getHeight()
 
+t.printAllLevel()
              
