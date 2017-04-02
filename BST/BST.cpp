@@ -17,7 +17,7 @@ void BST::insertRecur(int x)
 {
 	insertRecur(root, x);
 }
-void BST::insertRecur(TreeNode* _root, int x)
+void BST::insertRecur(TreeNode*& _root, int x)
 {
 	if (!_root)
 		_root = new TreeNode(x);
@@ -70,8 +70,10 @@ void BST::inOrderRecur()
 void BST::inOrderRecur(TreeNode *_root)
 {
 	if (_root){
-		cout << _root->val << " ";
+		//cout << _root->val << " ";
 		inOrderRecur(_root->left);
+		cout << _root->val << "; ";
 		inOrderRecur(_root->right);
+		cout << _root->val << "@ " ;
 	}
 }

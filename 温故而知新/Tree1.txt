@@ -1,0 +1,555 @@
+************************ 94. Binary Tree Inorder Traversal ********************
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> sk;
+        TreeNode *tmp = root;
+        while(tmp || !sk.empty()){
+            while(tmp){
+                sk.push(tmp); //在压入的时候就访问，是先序遍历
+                tmp = tmp->left;
+            }
+            tmp = sk.top();            
+            res.push_back(tmp->val);//在弹出的时候访问，是中序遍历
+            sk.pop();
+            tmp = tmp->right;
+        }        
+        return res;        
+    }
+};
+// 递归方法
+class Solution {
+public:
+    vector<int> vec;
+    vector<int> inorderTraversal(TreeNode* root) {
+        if (root == NULL)
+            ;
+        else
+        {
+            inorderTraversal(root->left);
+            vec.push_back(root->val);
+            inorderTraversal(root->right);
+        }
+        return vec;
+    }
+};
+
+
+********************* 96. Unique Binary Search Trees ****************************
+Given n, how many structurally unique BST's (binary search trees) that store values 1...n?
+class Solution {
+public:
+
+    int numTrees(int n) {
+        vector<int> ans(n+1); // DP, prepare vector to store the results from 1 to n
+        //初始化base case
+        ans[0] = 1;
+        //i代表节点的个数，使用动态规划，依次求出当节点数是1，2, 3...一直到n的解，这些解依次储存到ans[1], ans[2]...到ans[n-1]
+        //动态规划： 大问题的解建立在小问题的解的基础上： 例如当求解ans[4]时，会用到已经求得的ans[0], ans[1], ans[2], ans[3]的值. 
+        for (int i = 1; i <= n; i++)
+        {
+            //e.g., 假设 i == 4; 则节点1,2,3,4都可能是root, 所以要用Loop把所有的这些可能的子树都加起来
+            //假设1是root,则1的左边子树只能为空(只有1种这样的子树)，右边子树是一个三个节点的子树（有ans[3]这么多种不同的子树）
+            //所以对于1是root的情况，共有ans[0]*ans[3]这么多种不同的子树。
+            //又比如，假设3是root，则3的左子树有ans[3-1]种可能，右子树有ans[4-3]种可能。共有ans[2]*ans[1]多种不同的子树
+            for (int root = 1; root <= i; root++)
+                ans[i] += ans[root-1]*ans[i-root];
+        }
+        return ans[n]; //返回节点数为n的解
+    }
+};
+*********************** 95. Unique Binary Search Trees II **************************
+Given an integer n, generate all structurally unique BST's (binary search trees) that store values 1...n.
+For example,
+Given n = 3, your program should return all 5 unique BST's shown below.
+
+   1         3     3      2      1
+    \       /     /      / \      \
+     3     2     1      1   3      2
+    /     /       \                 \
+   2     1         2                 3
+class Solution {
+public:
+    vector<TreeNode*> generateTreesUtil(int start, int end) {
+    	vector<TreeNode*> res;
+    	// 当start == end的时候，只生成一个根节点的树
+    	// 当start > end的时候，结束递归， 需要返回一个[[]]
+    	if (start > end) {
+    		res.push_back(nullptr); // empty tree
+    		return res;
+    	}
+		
+    	// first, for simple case, GT(1,1) will generate a tree like NULL<-TreeNode(1)->NULL;
+        // e.g., GT(1, 3)
+        // i = 1: leftTrees = GT(1, 0); rightTrees = GT(2,3); so, GT(1,0)<-TreeNode(1)->GT(2, 3)
+        //        leftTrees = [[]]; rightTrees = GT(2, 3): 
+        //                          i = 2: leftTrees = GT(2,1); rightTrees = GT(3,3); so,NULL<-TreeNode(2)->TreeNode(3);
+        //                          i = 3: leftTrees = GT(2,2); rightTrees = GT(4,3); so,TreeNode(2)<-TreeNode(3)->NULL;
+        //                          so, GT(2,3) = [[2,null,3],[2,3,null]]
+        // i = 2: leftTrees = GT(1,1); rightTrees = GT(3,3), so, GT(1,1)<-TreeNode(2)->GT(3,3)
+        // i = 3: leftTrees = GT(1,2); rightTrees = GT(4,3); so GT(1,2)<-TreeNode(3)->GT(4,3)
+        //        rightTrees = [[]]; leftTrees = GT(1,2)
+        //                           i = 1: leftTrees = GT(1,0); rightTrees = GT(2,2);so, NULL<-TreeNode(1)->TreeNode(2)
+        //                           i = 2; leftTrees = GT(1,1); rightTrees = GT(3,2);so, TreeNode(1)<-TreeNode(2)->NULL;
+        //                           so, GT(1,2) = [[1,null,2],[2,1,null]]
+		
+    	for (int i = start; i <= end; ++i) {
+    		vector<TreeNode*> leftSubtrees = generateTreesUtil(start, i - 1);
+    		vector<TreeNode*> rightSubtrees = generateTreesUtil(i + 1, end);
+			
+        // 两个for循环嵌套：
+        // e.g., [1,2,3,4,5]; i = 3; 此时，root是TreeNode(3), GT(1,2)<-TreeNode(3)->GT(4,5)
+        // GT(1,2) = [[1,null,2], [2,1,null]] <-TreeNode(3) ->[[4,null,5], [5,4,null]]
+        // 明显的，共有2*2 = 4种可能的组合
+		
+    		for (TreeNode *left : leftSubtrees) {
+    			for (TreeNode *right : rightSubtrees) {
+    				TreeNode* root = new TreeNode(i);
+    				root->left = left;
+    				root->right = right;
+    				res.push_back(root);
+    			}
+    		}
+    	}
+    	return res;
+    }
+    
+    vector<TreeNode*> generateTrees(int n) {
+        if(!n) return vector<TreeNode*>{};
+        return generateTreesUtil(1, n);
+    }
+};
+****************************** 98. Validate Binary Search Tree ****************************
+Given a binary tree, determine if it is a valid binary search tree (BST).
+
+Assume a BST is defined as follows:
+The left subtree of a node contains only nodes with keys less than the node's key.
+The right subtree of a node contains only nodes with keys greater than the node's key.
+Both the left and right subtrees must also be binary search trees.
+
+class Solution {
+public:
+bool isValidBST(TreeNode* root) {
+    return isValidBST(root, NULL, NULL);
+}
+
+bool isValidBST(TreeNode* root, TreeNode* minNode, TreeNode* maxNode) {
+    if(!root) return true;
+    if(minNode && root->val <= minNode->val) return false; 
+    if(maxNode && root->val >= maxNode->val) return false;
+    return isValidBST(root->left, minNode, root) && isValidBST(root->right, root, maxNode);
+}
+};
+*****************************  100. Same Tree  **************************
+Given two binary trees, write a function to check if they are equal or not.
+Two binary trees are considered equal if they are structurally identical and the nodes have the same value.
+
+class Solution {
+public:
+    bool isSameTree(TreeNode* p, TreeNode* q) {
+        if ( p == NULL && q == NULL)
+            return true;
+        if ( p == NULL && q != NULL)
+            return false;
+        if ( p != NULL && q == NULL)
+            return false;
+        else if (p->val != q->val)
+            return false;
+        else
+        {
+            return isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
+        }
+        
+    }
+};
+***************************** 101. Symmetric Tree *****************************************
+Given a binary tree, check whether it is a mirror of itself (ie, symmetric around its center).
+For example, this binary tree [1,2,2,3,4,4,3] is symmetric:
+    1
+   / \
+  2   2
+ / \ / \
+3  4 4  3
+
+class Solution {
+public:
+    bool isSymmetric(TreeNode *L, TreeNode *R)
+    {
+        if(!R && !L)
+            return true;
+        if (L && !R || !L && R || L->val != R->val)
+            return false;
+        return isSymmetric(L->left, R->right) && isSymmetric(L->right, R->left);
+    }
+    
+    bool isSymmetric(TreeNode* root) {
+        if (!root)
+            return true;
+        return isSymmetric(root->left, root->right);
+    }
+};
+
+**************************** 102. Binary Tree Level Order Traversal ****************************
+Given a binary tree, return the level order traversal of its nodes' values. (ie, from left to right, level by level).
+
+For example:
+Given binary tree [3,9,20,null,null,15,7],
+    3
+   / \
+  9  20
+    /  \
+   15   7
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector< vector<int> >result;
+        stack<pair<TreeNode*, int>> sk;
+        sk.push(make_pair(root, 0));
+        TreeNode *tmp;
+        int level;
+        while(!sk.empty()){
+            tmp = sk.top().first;
+            level = sk.top().second;
+            sk.pop();
+            if(tmp){
+                if (result.size() <= level){ //如果进入下一层，则加入一个新的vector
+                    result.push_back(vector<int> {});//树有几层，就会加入几个vector
+                }              
+                result[level].push_back(tmp->val); //在result[level]上加入新的node
+                if(tmp->right) sk.push(make_pair(tmp->right, level+1));
+                if(tmp->left) sk.push(make_pair(tmp->left,level+1));
+            }
+        }        
+        return result;
+    }
+};
+*****************************103. Binary Tree Zigzag Level Order Traversal**********************************
+Given a binary tree, return the zigzag level order traversal of its nodes' values. (ie, from left to right, then right to left for the next level and alternate between).
+For example:
+Given binary tree [3,9,20,null,null,15,7],
+    3
+   / \
+  9  20
+    /  \
+   15   7
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int> > res;
+        if(!root) return res;
+        stack<pair<TreeNode*, int>> sk;
+        sk.push(make_pair(root,0));
+        TreeNode* tmp;
+        int level = 0;
+        while(!sk.empty()){
+            tmp = sk.top().first;
+            level = sk.top().second;
+            sk.pop();
+            if(tmp){
+                if(res.size() <= level)
+                    res.push_back(vector<int>{});
+                if(level % 2)
+                    res[level].push_back(tmp->val);//插到尾部
+                else
+                    res[level].insert(res[level].begin(), tmp->val);//每次插到第一个位置
+                sk.push(make_pair(tmp->left, level+1));
+                sk.push(make_pair(tmp->right, level+1));
+            }
+        }
+        return res;
+    }
+};   
+***************************104. Maximum Depth of Binary Tree***********************************
+Given a binary tree, find its maximum depth.
+class Solution {
+public:
+    int maxDepth(TreeNode* root) 
+    {
+        int left_height, right_height,max_height;
+        if (root == NULL)
+            return 0;        
+        else{
+            left_height = maxDepth(root->left);
+            right_height = maxDepth(root->right);
+            max_height = (left_height > right_height)? left_height: right_height;
+            max_height++;
+            return max_height;
+        }       
+    }
+};
+
+****************************************************************************
+105. Construct Binary Tree from Preorder and Inorder Traversal
+Given preorder and inorder traversal of a tree, construct the binary tree.
+class Solution {
+public:
+    TreeNode* buildTreeUtil(vector<int> &preorder, int i, int j, vector<int> &inorder, int ii, int jj){
+        if(i >= j|| ii >=jj)
+            return NULL;
+        
+        int root_val = preorder[i];
+        auto iter = find(inorder.begin()+ii, inorder.begin()+jj, root_val);
+        int dist = iter - inorder.begin() - ii;
+        //cout << dist << endl;
+        TreeNode* root = new TreeNode(root_val);
+        root->left = buildTreeUtil(preorder, i+1, i+dist+1, inorder, ii, ii+dist);
+        root->right = buildTreeUtil(preorder, i+dist+1, j, inorder, ii+dist+1, jj);
+        return root;      
+    }
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+       return buildTreeUtil(preorder, 0, preorder.size(), inorder, 0, inorder.size());
+    }
+};
+*************************106. Construct Binary Tree from Inorder and Postorder Traversal*************************
+Given inorder and postorder traversal of a tree, construct the binary tree.
+Note:
+class Solution {
+public:
+TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        
+        return helper(inorder, 0, inorder.size(), postorder, 0, postorder.size());
+    }
+private:
+    //
+    //[8,4,9,2,5,10,1,6,3,7,12]
+    //[8,9,4,10,5,2,6,12,7,3,1]
+    
+    //helper(inorder, 0, 9, postorder, 0, 9);
+    //inorder:    [8, 4, 9, 2, 5, 1, 6, 3, 7]
+    //postorder:  [8, 9, 4, 5, 2, 6, 7, 3, 1]
+    // index       0  1  2  3  4  5  6  7  8 
+    //1.root_val = 1;
+    //2.在inorder里找到1的iterator, inorder[5] = 1, 计算距离dis = 5;
+    //3.创建TreeNode(1)
+    //4.    TreeNode(1) ->left = helper(inorder, 0, 5, postorder, 0, 5);
+    //                         这时inorder =    [8, 4, 9, 2, 5] 1 6 3 7
+    //                             postorder =  [8, 9, 4, 5, 2] 6 7 3 1
+    //                                index =    0  1  2  3  4  5 6 7 8 
+    //                      1.      root_val = 2
+    //                      2.      在inorder里找到2的Iterator, inorder[3] = 2, 计算距离dis = 3
+    //                      3.      创建TreeNode(2)
+    //                      4.      TreeNode(2)->left = helper(inorder, 0, 3, postorder, 0, 3)
+    //                                            inoder =    [8, 4, 9] 2 5 1 6 3 7
+    //                                            postorder = [8, 9, 4] 5 2 6 7 3 1
+    //                                            index =      0  1  2  3 4 5 6 7 8 
+    //                                              1.   root_val = 4
+    //                                              2.   inoder[1] = 4, dis = 1
+    //                                              3.   TreeNode(4)
+    //                                              4.   TreeNode(4)->left = helper(inorder, 0, 1, postorder, 0, 1)
+    //                                                                inorder =   [8] 4 9 2 5 1 6 3 7
+    //                                                                postorder = [8] 9 4 5 2 6 7 3 1
+    //                                                                  index =    0  1 2 3 4 5 6 7 8
+    //                                                          1.    找到inorder[0] = 8, dis = 0
+    //                                                          2.    创建TreeNode(8)
+    //                                                          3.    TreeNode(8) ->left = NULL return!!
+    //                                              1.  TreeNode(4)->right = helper(inorder, 2, 3, postorder, 1, 1)
+    //
+    //5.    TreeMpde(1)->right = helper(inorder, 6, 9, postorder, 5, 8); 
+    //                         这时inorder =     8, 4, 9, 2, 5  1 [6 3  7]
+    //                             postorder =   8, 9, 4, 5, [2 6  7 3] 1
+    //                                index =    0  1  2  3  4  5  6 7  8
+    //.................................................................................................................
+    //                                                     index        0  1  2  3  4  5  6  7  8 
+    //            return = helper(inorder, 0, 9, postorder, 0, 9);     [8  4  9  2  5  1  6  3  7]
+    //                                                                 [8  9  4  5  2  6  7  3  1]
+    //TreeNode(1) ->left = helper(inorder, 0, 5, postorder, 0, 5);     [8  4  9  2  5] 1  6  3  7 
+    //                                                                 [8  9  4  5  2] 6  7  3  1
+    //TreeMpde(1)->right = helper(inorder, 6, 9, postorder, 5, 8);      8  4  9  2  5  1 [6  3  7]
+    //                                                                  8  9  4  5  2 [6  7  3] 1
+    //基本思路, inorder和postorder给出了两个数列（数的不同遍历表示）, i,j 和ii, jj 分别给出了数列的两个窗口
+    //在每次递归中，由postorder[jj-1]，即postorder窗口的最后一个值root_val，定义出一个新的子树树根，
+    //然后在inorder中寻找到root_val的位置，然后以位置为界，把inorder/postorder画出两个窗口（如上面例子所示）
+    //在接下来的递归中，重复上述过程。
+    //                  
+    //    
+    //用i, j 表示该轮递归，作用在inorder的范围，即是inorder[i, j], 最外层递归自然是inorder[0, inorder.size()]
+    TreeNode* helper(vector<int>& inorder, int i, int j, vector<int>& postorder, int ii, int jj)
+    {
+        // 每次取postorder的最后一个值root_val，将其作为树的根节点
+        // 然后从inroder中找到mid，将其分割成为两部分，左边作为mid的左子树，右边作为mid的右子树
+        // tree:     8 4 10 3 6 9 11
+        // Inorder   [3 4 6] 8 [9 10 11]
+        // postorder [3 6 4]   [9 11 10] 8
+
+        if(i >= j || ii >= jj)
+            return NULL;
+        
+        int root_val = postorder[jj-1];//在jj-1的位置上即是下一个根节点，在最外层递归，就是postorder的最后一个元素
+        
+        auto f = find(inorder.begin() + i,inorder.begin() + j,root_val);//在i和j的范围内寻找root_val, 返回一个iterator
+        
+        int dis = f - inorder.begin() - i; //dis是找到的iter与位置索引i的距离， inorder[i+dis] == root_val
+        
+        TreeNode* root = new TreeNode(root_val);
+        /*
+        cout << "root_val = " << root_val << " = ";
+        cout << "inorder[" << i+dis << "]; ";
+        cout << "inorder：[ ";
+        for(int k = i; k < i+dis; k++){
+            cout << inorder[k] << " ";
+        }
+        cout << "] + " << "[ ";
+        for(int k = i+dis+1; k < j; k++){
+            cout << inorder[k] << " ";
+        }
+        cout << "]; postorder：[ ";
+        for(int kk = ii; kk < ii+dis; kk++){
+            cout << postorder[kk] << " ";
+        }
+        cout << "] + [ ";
+        for(int kk = ii+dis; kk < jj-1; kk++){
+            cout << postorder[kk] << " ";
+        }
+        cout << "];" << i <<" " << i+dis << " " << j << " " << ii << " " << ii+dis << " " << jj-1 <<endl;
+        */
+        root -> left = helper(inorder,  i,       i+dis, postorder, ii,     ii+dis);
+        root -> right = helper(inorder, i+dis+1, j,     postorder, ii+dis, jj-1 );
+        return root;        
+    }
+};
+******************************107. Binary Tree Level Order Traversal II************************
+Given a binary tree, return the bottom-up level order traversal of its nodes' values. (ie, from left to right, level by level from leaf to root).
+For example:
+Given binary tree [3,9,20,null,null,15,7],
+    3
+   / \
+  9  20
+    /  \
+   15   7
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        stack<pair<TreeNode*, int>> sk;
+        sk.push(make_pair(root, 0));
+        TreeNode *tmp;
+        int level = 1;
+        vector<vector<int>> res;
+        while(!sk.empty()){
+            tmp = sk.top().first;
+            level = sk.top().second;
+            sk.pop();
+            if(tmp){
+                if(res.size() <= level)
+                    res.insert(res.begin(), vector<int>{});
+                res[res.size()-level-1].push_back(tmp->val);
+                sk.push(make_pair(tmp->right, level+1));
+                sk.push(make_pair(tmp->left, level+1));
+            }
+        }
+        return res;
+    }
+};
+****************************************************************************
+****************************************************************************
+****************************************************************************
+
+******* 106. Construct Binary Tree from Inorder and Postorder Traversal *******
+Given inorder and postorder traversal of a tree, construct the binary tree.
+class Solution {
+public:
+TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        
+        return helper(inorder, 0, inorder.size(), postorder, 0, postorder.size());
+    }
+private:
+    //
+    //[8,4,9,2,5,10,1,6,3,7,12]
+    //[8,9,4,10,5,2,6,12,7,3,1]
+    
+    //helper(inorder, 0, 9, postorder, 0, 9);
+    //inorder:    [8, 4, 9, 2, 5, 1, 6, 3, 7]
+    //postorder:  [8, 9, 4, 5, 2, 6, 7, 3, 1]
+    // index       0  1  2  3  4  5  6  7  8 
+    //1.root_val = 1;
+    //2.在inorder里找到1的iterator, inorder[5] = 1, 计算距离dis = 5;
+    //3.创建TreeNode(1)
+    //4.    TreeNode(1) ->left = helper(inorder, 0, 5, postorder, 0, 5);
+    //                         这时inorder =    [8, 4, 9, 2, 5] 1 6 3 7
+    //                             postorder =  [8, 9, 4, 5, 2] 6 7 3 1
+    //                                index =    0  1  2  3  4  5 6 7 8 
+    //                      1.      root_val = 2
+    //                      2.      在inorder里找到2的Iterator, inorder[3] = 2, 计算距离dis = 3
+    //                      3.      创建TreeNode(2)
+    //                      4.      TreeNode(2)->left = helper(inorder, 0, 3, postorder, 0, 3)
+    //                                            inoder =    [8, 4, 9] 2 5 1 6 3 7
+    //                                            postorder = [8, 9, 4] 5 2 6 7 3 1
+    //                                            index =      0  1  2  3 4 5 6 7 8 
+    //                                              1.   root_val = 4
+    //                                              2.   inoder[1] = 4, dis = 1
+    //                                              3.   TreeNode(4)
+    //                                              4.   TreeNode(4)->left = helper(inorder, 0, 1, postorder, 0, 1)
+    //                                                                inorder =   [8] 4 9 2 5 1 6 3 7
+    //                                                                postorder = [8] 9 4 5 2 6 7 3 1
+    //                                                                  index =    0  1 2 3 4 5 6 7 8
+    //                                                          1.    找到inorder[0] = 8, dis = 0
+    //                                                          2.    创建TreeNode(8)
+    //                                                          3.    TreeNode(8) ->left = NULL return!!
+    //                                              1.  TreeNode(4)->right = helper(inorder, 2, 3, postorder, 1, 1)
+    //
+    //5.    TreeMpde(1)->right = helper(inorder, 6, 9, postorder, 5, 8); 
+    //                         这时inorder =     8, 4, 9, 2, 5  1 [6 3  7]
+    //                             postorder =   8, 9, 4, 5, [2 6  7 3] 1
+    //                                index =    0  1  2  3  4  5  6 7  8
+    //.................................................................................................................
+    //                                                     index        0  1  2  3  4  5  6  7  8 
+    //            return = helper(inorder, 0, 9, postorder, 0, 9);     [8  4  9  2  5  1  6  3  7]
+    //                                                                 [8  9  4  5  2  6  7  3  1]
+    //TreeNode(1) ->left = helper(inorder, 0, 5, postorder, 0, 5);     [8  4  9  2  5] 1  6  3  7 
+    //                                                                 [8  9  4  5  2] 6  7  3  1
+    //TreeMpde(1)->right = helper(inorder, 6, 9, postorder, 5, 8);      8  4  9  2  5  1 [6  3  7]
+    //                                                                  8  9  4  5  2 [6  7  3] 1
+    //基本思路, inorder和postorder给出了两个数列（数的不同遍历表示）, i,j 和ii, jj 分别给出了数列的两个窗口
+    //在每次递归中，由postorder[jj-1]，即postorder窗口的最后一个值root_val，定义出一个新的子树树根，
+    //然后在inorder中寻找到root_val的位置，然后以位置为界，把inorder/postorder画出两个窗口（如上面例子所示）
+    //在接下来的递归中，重复上述过程。
+    //                  
+    //    
+    //用i, j 表示该轮递归，作用在inorder的范围，即是inorder[i, j], 最外层递归自然是inorder[0, inorder.size()]
+    TreeNode* helper(vector<int>& inorder, int i, int j, vector<int>& postorder, int ii, int jj)
+    {
+        // 每次取postorder的最后一个值root_val，将其作为树的根节点
+        // 然后从inroder中找到mid，将其分割成为两部分，左边作为mid的左子树，右边作为mid的右子树
+        // tree:     8 4 10 3 6 9 11
+        // Inorder   [3 4 6] 8 [9 10 11]
+        // postorder [3 6 4]   [9 11 10] 8
+
+        if(i >= j || ii >= jj)
+            return NULL;
+        
+        int root_val = postorder[jj-1];//在jj-1的位置上即是下一个根节点，在最外层递归，就是postorder的最后一个元素
+        
+        auto f = find(inorder.begin() + i,inorder.begin() + j,root_val);//在i和j的范围内寻找root_val, 返回一个iterator
+        
+        int dis = f - inorder.begin() - i; //dis是找到的iter与位置索引i的距离， inorder[i+dis] == root_val
+        
+        TreeNode* root = new TreeNode(root_val);
+        
+        cout << "root_val = " << root_val << " = ";
+        cout << "inorder[" << i+dis << "]; ";
+        cout << "inorder：[ ";
+        for(int k = i; k < i+dis; k++){
+            cout << inorder[k] << " ";
+        }
+        cout << "] + " << "[ ";
+        for(int k = i+dis+1; k < j; k++){
+            cout << inorder[k] << " ";
+        }
+        cout << "]; postorder：[ ";
+        for(int kk = ii; kk < ii+dis; kk++){
+            cout << postorder[kk] << " ";
+        }
+        cout << "] + [ ";
+        for(int kk = ii+dis; kk < jj-1; kk++){
+            cout << postorder[kk] << " ";
+        }
+        cout << "];" << i <<" " << i+dis << " " << j << " " << ii << " " << ii+dis << " " << jj-1 <<endl;
+        
+        root -> left = helper(inorder,  i,       i+dis, postorder, ii,     ii+dis);
+        root -> right = helper(inorder, i+dis+1, j,     postorder, ii+dis, jj-1 );
+
+        return root;
+        
+    }
+};
+

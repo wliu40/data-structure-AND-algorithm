@@ -41,7 +41,7 @@ public:
 	void sideView();
 
 private:
-	void insertRecur(TreeNode*, int);
+	void insertRecur(TreeNode*&, int);
 	void inOrderRecur(TreeNode* _root);
 //	int height;
 	TreeNode *root;
